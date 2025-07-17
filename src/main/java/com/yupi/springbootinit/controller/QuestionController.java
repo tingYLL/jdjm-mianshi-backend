@@ -14,10 +14,7 @@ import com.yupi.springbootinit.common.ResultUtils;
 import com.yupi.springbootinit.constant.UserConstant;
 import com.yupi.springbootinit.exception.BusinessException;
 import com.yupi.springbootinit.exception.ThrowUtils;
-import com.yupi.springbootinit.model.dto.question.QuestionAddRequest;
-import com.yupi.springbootinit.model.dto.question.QuestionEditRequest;
-import com.yupi.springbootinit.model.dto.question.QuestionQueryRequest;
-import com.yupi.springbootinit.model.dto.question.QuestionUpdateRequest;
+import com.yupi.springbootinit.model.dto.question.*;
 import com.yupi.springbootinit.model.entity.Question;
 import com.yupi.springbootinit.model.entity.QuestionBankQuestion;
 import com.yupi.springbootinit.model.entity.User;
@@ -272,6 +269,19 @@ public class QuestionController {
         // 查询数据库（作为没有 ES 的降级方案）
 //        Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    /**
+     * 批量删除题目
+     * @param questionBatchDeleteRequest
+     * @return
+     */
+    @PostMapping("/delete/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Boolean> batchDeleteQuestions(@RequestBody QuestionBatchDeleteRequest questionBatchDeleteRequest) {
+        ThrowUtils.throwIf(questionBatchDeleteRequest == null, ErrorCode.PARAMS_ERROR);
+        questionService.batchDeleteQuestions(questionBatchDeleteRequest.getQuestionIdList());
+        return ResultUtils.success(true);
     }
     // endregion
 }

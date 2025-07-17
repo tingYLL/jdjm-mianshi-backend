@@ -8,6 +8,7 @@ import com.yupi.springbootinit.model.entity.Question;
 import com.yupi.springbootinit.model.vo.QuestionVO;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 题目服务
@@ -60,4 +61,6 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     Page<Question> searchFromEs(QuestionQueryRequest questionQueryRequest);
+
+    void batchDeleteQuestions(List<Long> questionIdList);
 }
