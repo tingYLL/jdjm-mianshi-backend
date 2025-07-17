@@ -21,9 +21,7 @@ import com.yupi.springbootinit.model.vo.LoginUserVO;
 import com.yupi.springbootinit.model.vo.UserVO;
 import com.yupi.springbootinit.service.UserService;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -128,10 +126,10 @@ public class UserController {
      * @return 签到记录映射
      */
     @GetMapping("/get/sign_in")
-    public BaseResponse<Map<LocalDate, Boolean>> getUserSignInRecord(Integer year, HttpServletRequest request) {
+    public BaseResponse<List<Integer>> getUserSignInRecord(Integer year, HttpServletRequest request) {
         // 必须要登录才能获取
         User loginUser = userService.getLoginUser(request);
-        Map<LocalDate, Boolean> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
+        List<Integer> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
         return ResultUtils.success(userSignInRecord);
     }
     /**

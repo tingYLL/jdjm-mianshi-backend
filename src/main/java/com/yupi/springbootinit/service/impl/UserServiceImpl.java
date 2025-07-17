@@ -20,10 +20,7 @@ import com.yupi.springbootinit.utils.SqlUtils;
 
 import java.time.LocalDate;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -297,14 +294,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
-    @Override
-    public Map<LocalDate, Boolean> getUserSignInRecord(long userId, Integer year) {
+    public Map<LocalDate, Boolean> getUserSignInRecordOld(long userId, Integer year) {
         if(year == null){
             LocalDate date = LocalDate.now();
             year = date.getYear();
         }
         String key = RedisConstant.getUserSignInRedisKey(year, userId);
         RBitSet signInBitSet = redissonClient.getBitSet(key);
+        //加载BitSet到内存中，避免后续读取时发送多次请求
+        BitSet bitSet = signInBitSet.asBitSet();
         //构造返回结果
         Map<LocalDate, Boolean> result = new LinkedHashMap<>();
         //获取当前年份的总天数
@@ -312,9 +310,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         for(int current = 1;current <= totalDays;current++){
             //如2025年的第1天是1月1号，第2天是1月2号，第3天是1月3号，以此类推
             LocalDate currentDate = LocalDate.ofYearDay(year, current);
-            boolean isSignIn = signInBitSet.get(current);
+//            boolean isSignIn = signInBitSet.get(current);
+            boolean isSignIn = bitSet.get(current);
             result.put(currentDate, isSignIn);
         }
         return result;
+    }
+
+    @Override
+    public List<Integer> getUserSignInRecord(long userId, Integer year) {
+        if(year == null){
+            LocalDate date = LocalDate.now();
+            year = date.getYear();
+        }
+        String key = RedisConstant.getUserSignInRedisKey(year, userId);
+        RBitSet signInBitSet = redissonClient.getBitSet(key);
+        //加载BitSet到内存中，避免后续读取时发送多次请求
+        BitSet bitSet = signInBitSet.asBitSet();
+        //统计签到的日期
+        List<Integer> dayList = new ArrayList<>();
+
+        //从索引0开始查找下一个被设置为1的位
+        int index = bitSet.nextSetBit(0);
+        while(index >= 0){
+            dayList.add(index);
+            //继续查找下一个被设置为1的位
+            index = bitSet.nextSetBit(index + 1);
+        }
+        return dayList;
+
+        //获取当前年份的有签到的天数，如第1天，第220天等等
+//        int totalDays = Year.of(year).length();
+//        for(int current = 1;current <= totalDays;current++){
+//            boolean hasRecord = bitSet.get(current);
+//            if(hasRecord){
+//                dayList.add(current);
+//            }
+//        }
+//        return dayList;
     }
 }
