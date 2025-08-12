@@ -7,6 +7,7 @@ import com.yupi.springbootinit.model.dto.questionBankQuestion.QuestionBankQuesti
 import com.yupi.springbootinit.model.entity.QuestionBankQuestion;
 import com.yupi.springbootinit.model.entity.User;
 import com.yupi.springbootinit.model.vo.QuestionBankQuestionVO;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -68,4 +69,11 @@ public interface QuestionBankQuestionService extends IService<QuestionBankQuesti
      */
     void batchRemoveQuestionsFromBank(List<Long> questionIdList, long questionBankId);
 
+    /**
+     * 批量添加题目到题库（事务，仅供内部调用）
+     *
+     * @param questionBankQuestions
+     */
+    @Transactional(rollbackFor = Exception.class)
+    void batchAddQuestionsToBankInner(List<QuestionBankQuestion> questionBankQuestions);
 }
